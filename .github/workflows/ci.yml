@@ -9,16 +9,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [20.x]
-
     steps:
       - uses: actions/checkout@v3
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-      - run: npm ci
-      - run: npm run test:reports
+      - uses: oven-sh/setup-bun@v1
+      - run: bun install
+      - run: bun run test:reports
