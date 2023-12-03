@@ -2,6 +2,7 @@ import React, { ReactElement, useState } from 'react';
 import { StacksMainnet } from '@stacks/network';
 import {
   callReadOnlyFunction,
+  standardPrincipalCV,
   getAddressFromPublicKey,
   uintCV,
   cvToValue
@@ -17,7 +18,6 @@ import { verifyMessageSignatureRsv } from '@stacks/encryption';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ExternalLink } from './external-link';
 import { ArrowRight } from 'lucide-react';
 import { truncateAddress } from './lib/utils';
 
@@ -30,7 +30,7 @@ function App(): ReactElement {
   const appConfig = new AppConfig(['store_write', 'publish_data']);
   const userSession = new UserSession({ appConfig });
 
-  const message = 'Hello, Hiro Hacks!';
+  const message = 'Welcome!';
   const network = new StacksMainnet();
 
   // Define your authentication options here
@@ -42,7 +42,7 @@ function App(): ReactElement {
     },
     onFinish: (data: FinishedAuthData) => {
       // Handle successful authentication here
-      let userData = data.userSession.loadUserData();
+      const userData = data.userSession.loadUserData();
       setAddress(userData.profile.stxAddress.mainnet); // or .testnet for testnet
     },
     onCancel: () => {
@@ -63,12 +63,14 @@ function App(): ReactElement {
   };
 
   const fetchReadOnly = async (senderAddress: string) => {
-    // Define your contract details here
-    const contractAddress = 'SP000000000000000000002Q6VF78';
-    const contractName = 'pox-3';
-    const functionName = 'is-pox-active';
+    // const senderAddress = 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM';
+    const contractAddress = 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM';
 
-    const functionArgs = [uintCV(10)];
+    const functionArgs = [standardPrincipalCV(senderAddress)];
+
+    // const contractAddress = 'SP000000000000000000002Q6VF78';
+    const contractName = 'keys';
+    const functionName = 'is-keyholder';
 
     try {
       const result = await callReadOnlyFunction({
@@ -115,14 +117,7 @@ function App(): ReactElement {
     <div className="flex items-center justify-center min-h-screen">
       <div className="mx-auto max-w-2xl px-4">
         <div className="rounded-lg border bg-background p-8">
-          <h1 className="mb-2 text-lg font-semibold">Welcome to Hiro Hacks!</h1>
-          <p className="leading-normal text-muted-foreground">
-            This is an open source starter template built with{' '}
-            <ExternalLink href="https://docs.hiro.so/stacks.js/overview">
-              Stacks.js
-            </ExternalLink>{' '}
-            and a few integrations to help kickstart your app:
-          </p>
+          <h1 className="mb-2 text-lg font-semibold">Welcome</h1>
 
           <div className="mt-4 flex flex-col items-start space-y-2">
             {userSession.isUserSignedIn() ? (
