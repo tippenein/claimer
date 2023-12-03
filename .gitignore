@@ -263,6 +263,14 @@ dist
 .history
 .ionide
 
+logs
+*.log
+npm-debug.log*
+coverage
+*.info
+costs-reports.json
+node_modules
+
 **/settings/Mainnet.toml
 **/settings/Testnet.toml
 .cache/**

@@ -1,21 +1,26 @@
+import { describe, expect, it } from 'vitest';
+import { initSimnet } from '@hirosystems/clarinet-sdk';
+import { Cl, ClarityType } from '@stacks/transactions';
 
-import { describe, expect, it } from "vitest";
-
+const simnet = await initSimnet();
 const accounts = simnet.getAccounts();
-const address1 = accounts.get("wallet_1")!;
+const address1 = accounts.get('wallet_1')!;
 
-/*
-  The test below is an example. To learn more, read the testing documentation here:
-  https://docs.hiro.so/clarinet/feature-guides/test-contract-with-clarinet-sdk
-*/
+// https://docs.hiro.so/clarinet/feature-guides/test-contract-with-clarinet-sdk
 
-describe("example tests", () => {
-  it("ensures simnet is well initalised", () => {
+describe('Keys', () => {
+  it('ensures simnet is well initalised', () => {
     expect(simnet.blockHeight).toBeDefined();
   });
 
-  // it("shows an example", () => {
-  //   const { result } = simnet.callReadOnlyFn("counter", "get-counter", [], address1);
-  //   expect(result).toBeUint(0);
-  // });
+  it('get-key-supply', () => {
+    const { result } = simnet.callReadOnlyFn(
+      'keys',
+      'get-keys-supply',
+      [Cl.contractPrincipal(address1, 'something')],
+      address1
+    );
+    // expect(result).toHaveClarityType(ClarityType.UInt);
+    expect(result).toStrictEqual(Cl.uint(0));
+  });
 });

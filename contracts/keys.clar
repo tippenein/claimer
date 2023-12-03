@@ -5,7 +5,7 @@
 (define-map keysSupply { subject: principal } uint)
 (define-constant err-invalid-caller u1)
 (define-constant err-fee-value u2)
-(define-constant contract-owner 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM)
+(define-constant contract-owner tx-sender)
 (define-data-var protocolFeePercent uint u200) ;; or subjectFeePercent
 (define-data-var protocolFeeDestination principal tx-sender)
 
