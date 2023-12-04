@@ -6,6 +6,7 @@ const simnet = await initSimnet();
 const accounts = simnet.getAccounts();
 const address1 = accounts.get('wallet_1')!;
 const address2 = accounts.get('wallet_2')!;
+const arbiterAddress = accounts.get('wallet_3')!;
 
 // https://docs.hiro.so/clarinet/feature-guides/test-contract-with-clarinet-sdk
 
@@ -31,5 +32,14 @@ describe('Case', () => {
       address1
     );
     expect(result).toStrictEqual(Cl.error(Cl.uint(6002)));
+  });
+  it('checks the success case for create-case', () => {
+    const { result } = simnet.callPublicFn(
+      'case',
+      'create-case',
+      [Cl.uint(1), Cl.standardPrincipal(arbiterAddress)],
+      address1
+    );
+    expect(result).toStrictEqual(Cl.ok(Cl.bool(true)));
   });
 });

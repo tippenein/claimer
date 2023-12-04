@@ -11,15 +11,12 @@
 ;;
 (define-constant ERR_UNAUTHORIZED (err u6001))
 (define-constant ERR_INVALID_CLAIM_RESPONDENT (err u6002))
+(define-constant ERR_INVALID_ARBITER (err u6003))
 (define-constant CONTRACT_OWNER tx-sender)
 
 (define-data-var lastClaimId uint u0)
-(define-map Claimant
-  principal
-  bool
-)
 
-(define-map Claims
+(define-map Claim
   uint
   {
     claimant: principal,
@@ -46,29 +43,27 @@
     (
       (newClaimId (+ (var-get lastClaimId) u1))
     )
-    ;; (asserts! (is-claimant tx-sender) ERR_UNAUTHORIZED)
-    (if (is-eq tx-sender respondent)
-      ERR_INVALID_CLAIM_RESPONDENT
-      (begin
-        (map-set Claims
-        newClaimId
-        {
-            claimant: tx-sender,
-            name: name,
-            respondent: respondent,
-            isActive: true,
-            isExecuted: false
-        }
-        )
-        (var-set lastClaimId newClaimId)
-        (ok newClaimId)
-      )
+    (asserts! (not (is-eq tx-sender respondent)) ERR_INVALID_CLAIM_RESPONDENT)
+    (map-set Claim
+      newClaimId
+      {
+        claimant: tx-sender,
+        name: name,
+        respondent: respondent,
+        isActive: true,
+        isExecuted: false
+      }
     )
+    (var-set lastClaimId newClaimId)
+    (ok newClaimId)
   )
 )
 
+;; get-claim
+;; :: uint
+;; -> (optional Claim)
 (define-read-only (get-claim (claimId uint))
-  (map-get? Claims claimId)
+  (map-get? Claim claimId)
 )
 
 (define-public (create-case (claimId uint) (arbiter principal))
@@ -76,8 +71,8 @@
     (
       (claim (get-claim claimId))
     )
-    (asserts! (is-eq arbiter CONTRACT_OWNER) ERR_UNAUTHORIZED)
-    (asserts! (not (is-eq (get respondent claim) (some arbiter))) ERR_UNAUTHORIZED)
+    (asserts! (not (is-eq arbiter CONTRACT_OWNER)) ERR_UNAUTHORIZED)
+    (asserts! (not (is-eq (get respondent claim) (some arbiter))) ERR_INVALID_ARBITER)
     (map-set Case
       {
         claimId: claimId,
@@ -93,6 +88,3 @@
 
 
 ;; PRIVATE
-(define-read-only  (is-claimant (user principal))
-  (default-to false (map-get? Claimant user))
-)
