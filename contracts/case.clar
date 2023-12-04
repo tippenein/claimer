@@ -10,8 +10,8 @@
 ;; constants
 ;;
 (define-constant ERR_UNAUTHORIZED (err u6001))
+(define-constant ERR_INVALID_CLAIM_RESPONDENT (err u6002))
 (define-constant CONTRACT_OWNER tx-sender)
-
 
 (define-data-var lastClaimId uint u0)
 (define-map Claimant
@@ -22,7 +22,7 @@
 (define-map Claims
   uint
   {
-    creator: principal,
+    claimant: principal,
     name: (string-ascii 255),
     respondent: principal,
     isActive: bool,
@@ -46,14 +46,15 @@
     (
       (newClaimId (+ (var-get lastClaimId) u1))
     )
-    (asserts! (is-claimant tx-sender) ERR_UNAUTHORIZED)
+    ;; (asserts! (is-claimant tx-sender) ERR_UNAUTHORIZED)
+    (asserts! (is-eq tx-sender respondent) ERR_INVALID_CLAIM_RESPONDENT)
     (map-set Claims
       newClaimId
       {
-        creator: tx-sender,
+        claimant: tx-sender,
         name: name,
         respondent: respondent,
-        isActive: false,
+        isActive: true,
         isExecuted: false
       }
     )
@@ -70,7 +71,6 @@
   (let
     (
       (claim (get-claim claimId))
-
     )
     (asserts! (is-eq arbiter CONTRACT_OWNER) ERR_UNAUTHORIZED)
     (asserts! (not (is-eq (get respondent claim) (some arbiter))) ERR_UNAUTHORIZED)
