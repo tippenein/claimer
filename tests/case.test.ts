@@ -41,5 +41,22 @@ describe('Case', () => {
       address1
     );
     expect(result).toStrictEqual(Cl.ok(Cl.bool(true)));
+
+    const { result: isActive } = simnet.callReadOnlyFn(
+      'case',
+      'is-claim-active',
+      [Cl.uint(1)],
+      address1
+    );
+    expect(isActive).toStrictEqual(Cl.ok(Cl.bool(true)));
+  });
+  it('checks the invalid arbiter for create-case', () => {
+    const { result } = simnet.callPublicFn(
+      'case',
+      'create-case',
+      [Cl.uint(1), Cl.standardPrincipal(address2)],
+      address1
+    );
+    expect(result).toStrictEqual(Cl.error(Cl.uint(6003)));
   });
 });

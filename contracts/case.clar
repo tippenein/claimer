@@ -12,6 +12,7 @@
 (define-constant ERR_UNAUTHORIZED (err u6001))
 (define-constant ERR_INVALID_CLAIM_RESPONDENT (err u6002))
 (define-constant ERR_INVALID_ARBITER (err u6003))
+(define-constant ERR_UNKNOWN_CLAIM (err u6004))
 (define-constant CONTRACT_OWNER tx-sender)
 
 (define-data-var lastClaimId uint u0)
@@ -22,7 +23,7 @@
     claimant: principal,
     name: (string-ascii 255),
     respondent: principal,
-    isActive: bool,
+    isActive: bool, ;; turned active when a Case is created for it
     isExecuted: bool
   }
 )
@@ -69,10 +70,10 @@
 (define-public (create-case (claimId uint) (arbiter principal))
   (let
     (
-      (claim (get-claim claimId))
+      (claim (unwrap! (get-claim claimId) ERR_UNKNOWN_CLAIM))
     )
     (asserts! (not (is-eq arbiter CONTRACT_OWNER)) ERR_UNAUTHORIZED)
-    (asserts! (not (is-eq (get respondent claim) (some arbiter))) ERR_INVALID_ARBITER)
+    (asserts! (not (is-eq (get respondent claim) arbiter)) ERR_INVALID_ARBITER)
     (map-set Case
       {
         claimId: claimId,
@@ -80,9 +81,21 @@
       }
       false
     )
+    (map-set Claim claimId (merge claim { isActive: true }) )
     (ok true)
   )
+)
 
+(define-read-only (is-claim-active (claimId uint))
+  (let
+    (
+      (claim (unwrap! (get-claim claimId) ERR_UNKNOWN_CLAIM))
+    )
+    (if (get isActive claim)
+      (ok true)
+      (ok false)
+    )
+  )
 )
 
 
