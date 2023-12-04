@@ -18,6 +18,8 @@
 
 (define-data-var lastClaimId uint u0)
 
+(define-map Claimants principal uint)
+
 (define-map Claim
   uint
   {
@@ -46,7 +48,6 @@
     (
       (newClaimId (+ (var-get lastClaimId) u1))
     )
-    ;; (asserts! (not (is-eq (some tx-sender) respondent)) ERR_INVALID_CLAIM_RESPONDENT)
     (map-set Claim
       newClaimId
       {
@@ -72,6 +73,14 @@
     (map-set Claim claimId (merge claim { respondent: (some tx-sender)}))
     (ok true)
   )
+)
+
+;; get-claims
+;; :: principal
+;; -> (optional uint)
+;; TODO somehow return a list of claims?
+(define-read-only (get-claims)
+  (map-get? Claimants contract-caller)
 )
 
 ;; get-claim

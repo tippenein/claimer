@@ -1,46 +1,35 @@
-import React, { ReactElement, useState } from 'react';
-import { StacksDevnet, StacksMainnet } from '@stacks/network';
-import {
-  callReadOnlyFunction,
-  standardPrincipalCV,
-  getAddressFromPublicKey,
-  uintCV,
-  cvToValue
-} from '@stacks/transactions';
+import React, { ReactElement, useState, useEffect } from 'react';
 import {
   AppConfig,
   FinishedAuthData,
   showConnect,
   UserSession,
-  openSignatureRequestPopup
 } from '@stacks/connect';
-import { verifyMessageSignatureRsv } from '@stacks/encryption';
-
+import { useAuth } from './stores/useAuth'
+import { useClaim } from './stores/useClaim'
+import { callContract } from './data/stacks';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
 import { truncateAddress } from './lib/utils';
+import { appDetails } from './stores/useAuth';
 
-const USE_DEVNET = true;
 
 function App(): ReactElement {
   const [address, setAddress] = useState('');
-  const [isSignatureVerified, setIsSignatureVerified] = useState(false);
 
   // Initialize your app configuration and user session here
   const appConfig = new AppConfig(['store_write', 'publish_data']);
   const userSession = new UserSession({ appConfig });
+  const { session } = useAuth()
+  useEffect(() => {
+    const { fetchClaim } = useClaim.getState()
+    fetchClaim()
+  }, [])
 
-  const message = 'Welcome!';
-  const network = USE_DEVNET ? new StacksDevnet() : new StacksMainnet();
-
-  // Define your authentication options here
   const authOptions = {
     userSession,
-    appDetails: {
-      name: 'Claimer',
-      icon: 'src/favicon.svg'
-    },
+    appDetails: appDetails,
     onFinish: (data: FinishedAuthData) => {
       // Handle successful authentication here
       const userData = data.userSession.loadUserData();
@@ -63,51 +52,9 @@ function App(): ReactElement {
     }
   };
 
-  const fetchReadOnly = async (senderAddress: string) => {
-    const contractAddress = 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM';
-
-    const functionArgs = [standardPrincipalCV(senderAddress)];
-
-    const contractName = 'case';
-    const functionName = 'create-claim';
-
-    try {
-      const result = await call({
-        network,
-        contractAddress,
-        contractName,
-        functionName,
-        functionArgs,
-        senderAddress
-      });
-      console.log(cvToValue(result));
-    } catch (error) {
-      console.error('Error fetching read-only function:', error);
-    }
-  };
-
-  const createClaim = () => {
+  const createClaim = (address) => {
     if (userSession.isUserSignedIn()) {
-      openSignatureRequestPopup({
-        message,
-        network,
-        onFinish: async ({ publicKey, signature }) => {
-          // Verify the message signature using the verifyMessageSignatureRsv function
-          const verified = verifyMessageSignatureRsv({
-            message,
-            publicKey,
-            signature
-          });
-          if (verified) {
-            // The signature is verified, so now we can check if the user is a keyholder
-            setIsSignatureVerified(true);
-            console.log(
-              'Address derived from public key',
-              getAddressFromPublicKey(publicKey, network.version)
-            );
-          }
-        }
-      });
+      console.log('something')
     }
   };
 
@@ -144,7 +91,7 @@ function App(): ReactElement {
             {userSession.isUserSignedIn() ? (
               <div className="flex justify-between w-full">
                 <Button
-                  onClick={() => fetchReadOnly(address)}
+                  onClick={() => createClaim(address)}
                   variant="link"
                   className="h-auto p-0 text-base"
                 >
@@ -170,36 +117,6 @@ function App(): ReactElement {
     </div>
   );
 
-  // return (
-  //   <div className="text-center">
-  //     <h1 className="text-xl">Friend.tech</h1>
-  //     <div>
-  //       <button onClick={disconnectWallet}>Disconnect Wallet</button>
-  //     </div>
-  //     <div>
-  //       <p>
-  //         {address} is {isKeyHolder ? '' : 'not'} a key holder
-  //       </p>
-  //       <div>
-  //         <input
-  //           type="text"
-  //           id="address"
-  //           name="address"
-  //           placeholder="Enter address"
-  //         />
-  //         <button onClick={() => checkIsKeyHolder(address)}>
-  //           Check Key Holder
-  //         </button>
-  //         <div>
-  //           <p>Key Holder Check Result: {isKeyHolder ? 'Yes' : 'No'}</p>
-  //         </div>
-  //       </div>
-  //     </div>
-  //     <div>
-  //       Sign this message: <button onClick={signMessage}>Sign</button>
-  //     </div>
-  //   </div>
-  // );
 }
 
 export default App;
