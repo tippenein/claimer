@@ -1,5 +1,5 @@
 import React, { ReactElement, useState } from 'react';
-import { StacksMainnet } from '@stacks/network';
+import { StacksDevnet, StacksMainnet } from '@stacks/network';
 import {
   callReadOnlyFunction,
   standardPrincipalCV,
@@ -21,23 +21,24 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
 import { truncateAddress } from './lib/utils';
 
+const USE_DEVNET = true;
+
 function App(): ReactElement {
   const [address, setAddress] = useState('');
   const [isSignatureVerified, setIsSignatureVerified] = useState(false);
-  const [hasFetchedReadOnly, setHasFetchedReadOnly] = useState(false);
 
   // Initialize your app configuration and user session here
   const appConfig = new AppConfig(['store_write', 'publish_data']);
   const userSession = new UserSession({ appConfig });
 
   const message = 'Welcome!';
-  const network = new StacksMainnet();
+  const network = USE_DEVNET ? new StacksDevnet() : new StacksMainnet();
 
   // Define your authentication options here
   const authOptions = {
     userSession,
     appDetails: {
-      name: 'My App',
+      name: 'Claimer',
       icon: 'src/favicon.svg'
     },
     onFinish: (data: FinishedAuthData) => {
@@ -63,17 +64,15 @@ function App(): ReactElement {
   };
 
   const fetchReadOnly = async (senderAddress: string) => {
-    // const senderAddress = 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM';
     const contractAddress = 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM';
 
     const functionArgs = [standardPrincipalCV(senderAddress)];
 
-    // const contractAddress = 'SP000000000000000000002Q6VF78';
-    const contractName = 'keys';
-    const functionName = 'is-keyholder';
+    const contractName = 'case';
+    const functionName = 'create-claim';
 
     try {
-      const result = await callReadOnlyFunction({
+      const result = await call({
         network,
         contractAddress,
         contractName,
@@ -81,14 +80,13 @@ function App(): ReactElement {
         functionArgs,
         senderAddress
       });
-      setHasFetchedReadOnly(true);
       console.log(cvToValue(result));
     } catch (error) {
       console.error('Error fetching read-only function:', error);
     }
   };
 
-  const signMessage = () => {
+  const createClaim = () => {
     if (userSession.isUserSignedIn()) {
       openSignatureRequestPopup({
         message,
@@ -127,7 +125,7 @@ function App(): ReactElement {
                   variant="link"
                   className="h-auto p-0 text-base"
                 >
-                  1. Disconnect wallet
+                  Disconnect wallet
                   <ArrowRight size={15} className="ml-1" />
                 </Button>
                 {address && <span>{truncateAddress(address)}</span>}
@@ -138,21 +136,10 @@ function App(): ReactElement {
                 variant="link"
                 className="h-auto p-0 text-base"
               >
-                1. Connect your wallet
+                Connect your wallet
                 <ArrowRight size={15} className="ml-1" />
               </Button>
             )}
-            <div className="flex justify-between w-full">
-              <Button
-                onClick={signMessage}
-                variant="link"
-                className="h-auto p-0 text-base text-neutral-500"
-              >
-                2. Sign a message
-                <ArrowRight size={15} className="ml-1" />
-              </Button>
-              {isSignatureVerified && <span>{message}</span>}
-            </div>
 
             {userSession.isUserSignedIn() ? (
               <div className="flex justify-between w-full">
@@ -161,24 +148,18 @@ function App(): ReactElement {
                   variant="link"
                   className="h-auto p-0 text-base"
                 >
-                  3. Read from a smart contract
+                  Start a claim
                   <ArrowRight size={15} className="ml-1" />
                 </Button>
-                {hasFetchedReadOnly && (
-                  <span>
-                    <Badge className="text-orange-500 bg-orange-100">
-                      Success
-                    </Badge>
-                  </span>
-                )}
               </div>
             ) : (
               <div className="flex justify-between w-full">
                 <Button
                   variant="link"
+                  onClick={connectWallet}
                   className="disabled h-auto p-0 text-base"
                 >
-                  3. Read from a smart contract
+                  Start a claim
                   <ArrowRight size={15} className="ml-1" />
                 </Button>
               </div>

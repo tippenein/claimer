@@ -19,19 +19,50 @@ describe('Case', () => {
     const { result } = simnet.callPublicFn(
       'case',
       'create-claim',
-      [Cl.stringAscii('new claim'), Cl.standardPrincipal(address2)],
+      [Cl.stringAscii('new claim'), Cl.stringAscii('something@example.com')],
       address1
     );
     expect(result).toStrictEqual(Cl.ok(Cl.uint(1)));
   });
   it('fails if create-claim is called with respondent as contract owner', () => {
-    const { result } = simnet.callPublicFn(
+    simnet.callPublicFn(
       'case',
       'create-claim',
-      [Cl.stringAscii('bad claim'), Cl.standardPrincipal(address1)],
+      [Cl.stringAscii('bad claim'), Cl.stringAscii('whatever@whatever.com')],
+      address1
+    );
+    const { result } = simnet.callPublicFn(
+      'case',
+      'alter-respondent',
+      [Cl.uint(1)],
       address1
     );
     expect(result).toStrictEqual(Cl.error(Cl.uint(6002)));
+  });
+  it('checks the invalid respondent for create-case', () => {
+    simnet.callPublicFn(
+      'case',
+      'create-claim',
+      [Cl.stringAscii('claim 2'), Cl.stringAscii('whatever@whatever.com')],
+      address1
+    );
+    const { result } = simnet.callPublicFn(
+      'case',
+      'create-case',
+      [Cl.uint(2), Cl.standardPrincipal(address2)],
+      address1
+    );
+    expect(result).toStrictEqual(Cl.error(Cl.uint(6005)));
+  });
+  it('checks the invalid arbiter for create-case', () => {
+    simnet.callPublicFn('case', 'alter-respondent', [Cl.uint(1)], address2);
+    const { result } = simnet.callPublicFn(
+      'case',
+      'create-case',
+      [Cl.uint(1), Cl.standardPrincipal(address2)],
+      address1
+    );
+    expect(result).toStrictEqual(Cl.error(Cl.uint(6003)));
   });
   it('checks the success case for create-case', () => {
     const { result } = simnet.callPublicFn(
@@ -49,14 +80,5 @@ describe('Case', () => {
       address1
     );
     expect(isActive).toStrictEqual(Cl.ok(Cl.bool(true)));
-  });
-  it('checks the invalid arbiter for create-case', () => {
-    const { result } = simnet.callPublicFn(
-      'case',
-      'create-case',
-      [Cl.uint(1), Cl.standardPrincipal(address2)],
-      address1
-    );
-    expect(result).toStrictEqual(Cl.error(Cl.uint(6003)));
   });
 });
