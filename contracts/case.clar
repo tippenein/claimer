@@ -19,6 +19,7 @@
 (define-data-var lastClaimId uint u0)
 
 (define-map Claimants principal uint)
+(define-map Respondents principal uint)
 
 (define-map Claim
   uint
@@ -60,6 +61,7 @@
       }
     )
     (var-set lastClaimId newClaimId)
+    (map-set Claimants tx-sender newClaimId)
     (ok newClaimId)
   )
 )
@@ -71,6 +73,7 @@
     )
     (asserts! (not (is-eq tx-sender (get claimant claim))) ERR_INVALID_CLAIM_RESPONDENT)
     (map-set Claim claimId (merge claim { respondent: (some tx-sender)}))
+    (map-set Respondents tx-sender claimId)
     (ok true)
   )
 )
