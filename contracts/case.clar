@@ -47,19 +47,23 @@
       (newClaimId (+ (var-get lastClaimId) u1))
     )
     ;; (asserts! (is-claimant tx-sender) ERR_UNAUTHORIZED)
-    (asserts! (is-eq tx-sender respondent) ERR_INVALID_CLAIM_RESPONDENT)
-    (map-set Claims
-      newClaimId
-      {
-        claimant: tx-sender,
-        name: name,
-        respondent: respondent,
-        isActive: true,
-        isExecuted: false
-      }
+    (if (is-eq tx-sender respondent)
+      ERR_INVALID_CLAIM_RESPONDENT
+      (begin
+        (map-set Claims
+        newClaimId
+        {
+            claimant: tx-sender,
+            name: name,
+            respondent: respondent,
+            isActive: true,
+            isExecuted: false
+        }
+        )
+        (var-set lastClaimId newClaimId)
+        (ok newClaimId)
+      )
     )
-    (var-set lastClaimId newClaimId)
-    (ok newClaimId)
   )
 )
 

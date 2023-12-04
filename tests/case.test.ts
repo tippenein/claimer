@@ -18,10 +18,7 @@ describe('Case', () => {
     const { result } = simnet.callPublicFn(
       'case',
       'create-claim',
-      [
-        Cl.stringAscii('new claim'),
-        Cl.standardPrincipal(address2)
-      ],
+      [Cl.stringAscii('new claim'), Cl.standardPrincipal(address2)],
       address1
     );
     expect(result).toStrictEqual(Cl.ok(Cl.uint(1)));
@@ -30,10 +27,7 @@ describe('Case', () => {
     const { result } = simnet.callPublicFn(
       'case',
       'create-claim',
-      [
-        Cl.stringAscii('bad claim'),
-        Cl.contractPrincipal(address1, 'respondent')
-      ],
+      [Cl.stringAscii('bad claim'), Cl.standardPrincipal(address1)],
       address1
     );
     expect(result).toStrictEqual(Cl.error(Cl.uint(6002)));
