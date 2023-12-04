@@ -20,7 +20,9 @@ Person 2
 1. explain your side
 2. upload your side
 
-Arbitrator
+Arbitrator (Neutral party)
 1. sees boths sides
 2. comes to conclusion
 3. decides payout
+
+Neutral party is paid out from the winners payout

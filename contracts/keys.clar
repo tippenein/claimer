@@ -3,8 +3,8 @@
 (define-map keysBalance { subject: principal, holder: principal } uint)
 ;; stores the total supply for each subject.
 (define-map keysSupply { subject: principal } uint)
-(define-constant err-invalid-caller u1)
-(define-constant err-fee-value u2)
+(define-constant ERR_INVALID_CALLER (err u900))
+(define-constant ERR_FEE_VALUE u901)
 (define-constant contract-owner tx-sender)
 (define-data-var protocolFeePercent uint u200) ;; or subjectFeePercent
 (define-data-var protocolFeeDestination principal tx-sender)
@@ -106,9 +106,9 @@
 (define-public (set-protocol-fee-percent (feePercent uint))
   ;; check that tx-sender is the contract owner
   (begin
-    (asserts! (>= feePercent u0) (err err-fee-value))
+    (asserts! (>= feePercent u0) (err ERR_FEE_VALUE))
     (if (is-eq tx-sender contract-owner)
       (ok (var-set protocolFeePercent feePercent))
-    (err err-invalid-caller))
+    ERR_INVALID_CALLER)
   )
 )
