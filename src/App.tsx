@@ -67,12 +67,6 @@ function App(): ReactElement {
     }
   };
 
-  const createClaim = (name, respondentEmail) => {
-    if (userSession.isUserSignedIn()) {
-      useClaim.getState().createClaim(name, respondentEmail);
-    }
-  };
-
   return (
     <>
       {modalOpen && (
