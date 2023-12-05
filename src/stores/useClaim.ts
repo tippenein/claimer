@@ -7,6 +7,7 @@ import type {
 } from '@stacks/stacks-blockchain-api-types';
 
 import { callContract, network, readOnlyRequest } from '../data/stacks';
+import { stringCV } from '@stacks/transactions';
 
 type ClaimTx = ContractCallTransaction | MempoolContractCallTransaction;
 
@@ -20,12 +21,20 @@ interface ClaimStore {
   claimId: UIntCV | null;
   claim: Claim | null;
   fetchClaim: () => Promise<void>;
+  createClaim: (name: string, respondent: string) => Promise<void>;
   resetAll: () => void;
 }
 
 export const useClaim = create<ClaimStore>((set, get) => ({
   claimId: null,
   claim: null,
+
+  async createClaim(name: string, respondent: string) {
+    callContract('create-claim', [
+      stringCV(name, 'ascii'),
+      stringCV(respondent, 'ascii')
+    ]);
+  },
 
   async fetchClaim() {
     const rawClaimId = await readOnlyRequest('get-claims');
